@@ -6,64 +6,91 @@ import { config } from 'dotenv';
 config();
 
 app.get('/', async (req, res) => {
-	const Products = await getProducts();
-	const limitedProducts = Products.filter((product) => product.category.id === 3).slice(0, 5);
-	const markup = `
+    const Products = await getProducts();
+    const limitedProducts = Products.filter((product) => product.category.id === 3).slice(0, 5);
+    const markup = `
         <body style="
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
         display: flex;
-        justify-content: center; 
-        flex-wrap: wrap; 
-        width: 1200px; 
-        margin: auto;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
         ">
-            <div style="
-            background: rgb(8,102,255) ; 
-            width: 100%; height: 100px; 
-            padding: 10px;display: 
-            flex; justify-content: center; align-items: center; 
-            border: solid 2px black;border-radius: 10px; 
-            padding: 10px;">
-                <h1 style="color: white;">Refurbish your otherwise rubish, buy or sell old products that need a new home!<br>buy one pay for two, help someone in need! (thats me!)</br></h1>
+            <div class="title"
+            style="
+            position:fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            background: rgb(69,102,255); 
+            width: 100%; 
+            height: 100px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            ">
+                <h1 style="
+                color: white; 
+                text-align: center;
+                ">Test site for buying products using Klarnas API</h1>
             </div>
+            <div class="products-container" style="
+            position: relative;
+            top: 140px;
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+            ">
             ${limitedProducts
-				.map(
-					(p) => `
-                <div style="
-                margin: 10px;
-                width: 400px; 
-                height: 435px; 
-                justify-content: center; 
+                .map(
+                    (p) => `
+                <div class="product-card" style="
+                width: 380px; 
+                height: auto;
                 align-items: center;
-                background: rgb(8,102,255);
-                border-radius: 13px;
+                background: rgb(69,102,255);
+                border-radius: 5px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-sizing: border-box;
                 ">
-                    <div style="
+                    <div class="product-card-content" style="
                         display: flex; 
-                        flex-direction: column; 
+                        flex-direction: column;
                         align-items: center; 
                         justify-content: center;
                         color: white; 
-                        border: solid 2px black;
                         border-radius: 10px; 
                         padding: 10px; 
-                        text-align: center;"
-                        >
+                        text-align: center;
+                        width: 100%;
+                        box-sizing: border-box;
+                        ">
                         <img    
                             src="${p.images}" 
-                             
                             style="
-                                max-width: 350px; 
+                                max-width: 100%; 
                                 max-height: 250px; 
-                                margin-bottom: 10px;" />
+                                margin-bottom: 10px;
+                                padding-top: 10px;
+                                " />
                         <a 
                         href="/products/${p.id}"
                         style="
-                            text-decoration: none; 
-                            border: 2px solid darkblue;
+                            text-decoration: none;
                             border-radius: 5px; 
                             background-color: lightgray;
+                            color: black;
                             margin: 10px;
                             padding: 5px;
+                            width: 100%;
+                            box-sizing: border-box;
                         ">${p.title}</a>
                         <div 
                             style="font-weight: bold;">
@@ -73,34 +100,57 @@ app.get('/', async (req, res) => {
                         overflow: hidden; 
                         text-overflow: ellipsis; 
                         max-height: 50px;
+                        width: 100%;
+                        box-sizing: border-box;
                         ">${p.description}</p>
                     </div>
                 </div>
             `
-				)
-				.join('')}
+                )
+                .join('')}
+            </div>
+            <style>
+                @media (max-width: 980px) {
+                    .title {
+                        transform: scale(3);
+                    }
+                    .title h1{
+                        font-size: 15px;
+                        margin-top: 40px;
+                    }
+                    .products-container {
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: space-around;
+                    }
+                    .product-card {
+                        margin-top: 350px;
+                        transform: scaleY(1.8) scaleX(1.8);
+                    }
+                }
+            </style>
         </body>
     `;
-	res.send(markup);
+    res.send(markup);
 });
 
 app.get('/products/:id', async function (req, res) {
-	try {
-		const { id } = req.params;
-		const product = await getProduct(id);
-		const klarnaJsonResponse = await createOrder(product);
-		const html_snippet = klarnaJsonResponse.html_snippet;
-		res.send(html_snippet);
-	} catch (error) {
-		res.send(error.message);
-	}
+    try {
+        const { id } = req.params;
+        const product = await getProduct(id);
+        const klarnaJsonResponse = await createOrder(product);
+        const html_snippet = klarnaJsonResponse.html_snippet;
+        res.send(html_snippet);
+    } catch (error) {
+        res.send(error.message);
+    }
 });
 
 app.get('/confirmation', async function (req, res) {
-	const order_id = req.query.order_id;
-	const klarnaJsonResponse = await retrieveOrder(order_id);
-	const html_snippet = klarnaJsonResponse.html_snippet;
-	res.send(html_snippet);
+    const order_id = req.query.order_id;
+    const klarnaJsonResponse = await retrieveOrder(order_id);
+    const html_snippet = klarnaJsonResponse.html_snippet;
+    res.send(html_snippet);
 });
 
 app.listen(process.env.PORT);
